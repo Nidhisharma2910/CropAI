@@ -1,0 +1,12 @@
+# Ignore Python virtual environment
+venv/
+
+# Ignore other large files and OS-specific files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+*.db
+.DS_Store
+Thumbs.db
