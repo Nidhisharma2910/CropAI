@@ -10,3 +10,6 @@ __pycache__/
 *.db
 .DS_Store
 Thumbs.db
+
+
+Data-processed/New Plant Disease Dataset(Agumented)/
