@@ -49,20 +49,28 @@ crop_recommendation_model = pickle.load(open(crop_model_path, 'rb'))
 
 # ----------------------------------------- Helper Functions -----------------------------------------
 
+import requests
+
 def weather_fetch(city_name):
-    api_key = config.weather_api_key
+    api_key = "bca626eba2b1f309cd595adaf5b42d91"  # put your key here
     base_url = "http://api.openweathermap.org/data/2.5/weather?"
     complete_url = f"{base_url}appid={api_key}&q={city_name}"
 
     response = requests.get(complete_url)
     x = response.json()
 
-    if x["cod"] != "404":
+    print("API Response:", x)   # ✅ helps debug if something goes wrong
+
+    # Check if request was successful
+    if response.status_code == 200 and "main" in x:
         y = x["main"]
-        temperature = round((y["temp"] - 273.15), 2)
+        temperature = round((y["temp"] - 273.15), 2)  # Convert from Kelvin to °C
         humidity = y["humidity"]
         return temperature, humidity
-    return None
+    else:
+        # If error, return message
+        print("Error fetching weather:", x.get("message", "Unknown error"))
+        return None
 
 def predict_image(img, model=disease_model):
     transform = transforms.Compose([
