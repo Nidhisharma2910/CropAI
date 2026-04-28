@@ -50,26 +50,39 @@ crop_recommendation_model = pickle.load(open(crop_model_path, 'rb'))
 # ----------------------------------------- Helper Functions -----------------------------------------
 
 import requests
+import os
 
 def weather_fetch(city_name):
-    api_key = "030612e3c3ca4be3ab260459252711"   # your API key
+    api_key = os.getenv("WEATHER_API_KEY")
+    
+    if not api_key:
+        print("❌ API key not found. Set WEATHER_API_KEY")
+        return None
+
     base_url = "http://api.weatherapi.com/v1/current.json"
-    complete_url = f"{base_url}appid={api_key}&q={city_name}"
+    complete_url = f"{base_url}?key={api_key}&q={city_name}"
 
-    response = requests.get(complete_url)
-    x = response.json()
+    try:
+        response = requests.get(complete_url)
+        data = response.json()
 
-    print("API Response:", x)   # ✅ helps debug if something goes wrong
+        print("API Response:", data)  # debug
 
-    # Check if request was successful
-    if response.status_code == 200 and "main" in x:
-        y = x["main"]
-        temperature = round((y["temp"] - 273.15), 2)  # Convert from Kelvin to °C
-        humidity = y["humidity"]
-        return temperature, humidity
-    else:
-        # If error, return message
-        print("Error fetching weather:", x.get("message", "Unknown error"))
+        # Check success
+        if response.status_code == 200 and "current" in data:
+            current = data["current"]
+
+            temperature = current["temp_c"]   # already in Celsius ✅
+            humidity = current["humidity"]
+
+            return temperature, humidity
+
+        else:
+            print("❌ Error:", data.get("error", {}).get("message", "Unknown error"))
+            return None
+
+    except Exception as e:
+        print("❌ Exception occurred:", e)
         return None
 
 def predict_image(img, model=disease_model):
