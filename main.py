@@ -52,8 +52,8 @@ crop_recommendation_model = pickle.load(open(crop_model_path, 'rb'))
 import requests
 
 def weather_fetch(city_name):
-    api_key = os.getenv("OPENWEATHER_API_KEY") # put your key here
-    base_url = "http://api.openweathermap.org/data/2.5/weather?"
+    api_key = "030612e3c3ca4be3ab260459252711"   # your API key
+    base_url = "http://api.weatherapi.com/v1/current.json"
     complete_url = f"{base_url}appid={api_key}&q={city_name}"
 
     response = requests.get(complete_url)

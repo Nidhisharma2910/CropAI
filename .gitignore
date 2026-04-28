@@ -1,5 +1,8 @@
-# Ignore Python virtual environment
-venv/
+
+
+cropenv
+__pycache__/
+*.pyc
 .env
 
 # Ignore other large files and OS-specific files
