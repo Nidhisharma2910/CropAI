@@ -58,23 +58,23 @@ if os.path.exists(disease_model_path):
             torch.load(disease_model_path, map_location=torch.device('cpu'))
         )
         disease_model.eval()
-        print("✅ Disease model loaded successfully")
+        print(" Disease model loaded successfully")
     except Exception as e:
-        print(f"❌ Failed to load disease model: {e}")
+        print(f" Failed to load disease model: {e}")
         disease_model = None
 else:
-    print(f"❌ Disease model file NOT found at: {os.path.abspath(disease_model_path)}")
+    print(f" Disease model file NOT found at: {os.path.abspath(disease_model_path)}")
 
 if os.path.exists(crop_model_path):
     try:
         with open(crop_model_path, 'rb') as f:
             crop_recommendation_model = pickle.load(f)
-        print("✅ Crop model loaded successfully")
+        print("Crop model loaded successfully")
     except Exception as e:
-        print(f"❌ Failed to load crop model: {e}")
+        print(f" Failed to load crop model: {e}")
         crop_recommendation_model = None
 else:
-    print(f"❌ Crop model file NOT found at: {os.path.abspath(crop_model_path)}")
+    print(f" Crop model file NOT found at: {os.path.abspath(crop_model_path)}")
 
 # ─────────────────────────────────────────────────────────────
 # Location Coordinates
@@ -179,7 +179,7 @@ def get_lat_lon(city_or_state):
     key = city_or_state.strip().lower()
     if key in LOCATION_COORDS:
         lat, lon = LOCATION_COORDS[key]
-        print(f"📍 '{city_or_state}' → lat={lat}, lon={lon}")
+        print(f" '{city_or_state}' → lat={lat}, lon={lon}")
         return lat, lon
     try:
         url = (f"https://geocoding-api.open-meteo.com/v1/search"
@@ -189,10 +189,10 @@ def get_lat_lon(city_or_state):
         data = response.json()
         if "results" in data and len(data["results"]) > 0:
             return data["results"][0]["latitude"], data["results"][0]["longitude"]
-        print(f"❌ '{city_or_state}' not found in geocoding API")
+        print(f" '{city_or_state}' not found in geocoding API")
         return None, None
     except Exception as e:
-        print(f"❌ Geocoding error: {e}")
+        print(f" Geocoding error: {e}")
         return None, None
 
 
@@ -212,10 +212,10 @@ def weather_fetch(lat, lon):
             return None, None
         temperature = data["current_weather"]["temperature"]
         humidity    = data["hourly"]["relative_humidity_2m"][0]
-        print(f"✅ Weather → {temperature}°C, {humidity}%")
+        print(f" Weather → {temperature}°C, {humidity}%")
         return temperature, humidity
     except Exception as e:
-        print(f"❌ Weather error: {e}")
+        print(f" Weather error: {e}")
         return None, None
 
 
@@ -257,7 +257,7 @@ def crop_prediction():
     if request.method == 'POST':
         try:
             if crop_recommendation_model is None:
-                print("❌ Crop model is not loaded!")
+                print(" Crop model is not loaded!")
                 return render_template('try_again.html', title='Crop Recommendation')
 
             N        = int(request.form['nitrogen'])
@@ -276,25 +276,25 @@ def crop_prediction():
             if lat is None and state:
                 lat, lon = get_lat_lon(state)
             if lat is None:
-                print("❌ No coordinates found")
+                print(" No coordinates found")
                 return render_template('try_again.html', title='Crop Recommendation')
 
             temperature, humidity = weather_fetch(lat, lon)
             if temperature is None or humidity is None:
-                print("❌ Weather fetch failed")
+                print("Weather fetch failed")
                 return render_template('try_again.html', title='Crop Recommendation')
 
             data = np.array([[N, P, K, temperature, humidity, ph, rainfall]])
             prediction = crop_recommendation_model.predict(data)[0]
-            print(f"🌾 Prediction: {prediction}")
+            print(f" Prediction: {prediction}")
             return render_template('crop-result.html', prediction=prediction, title='Crop Recommendation')
 
         except KeyError as e:
-            print(f"❌ Missing form field: {e}")
+            print(f" Missing form field: {e}")
             traceback.print_exc()
             return render_template('try_again.html', title='Crop Recommendation')
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f" Error: {e}")
             traceback.print_exc()
             return render_template('try_again.html', title='Crop Recommendation')
 
@@ -330,7 +330,7 @@ def fert_recommend():
         return render_template('fertilizer-result.html', recommendation=response, title='Fertilizer Suggestion')
 
     except Exception as e:
-        print(f"❌ Fertilizer error: {e}")
+        print(f" Fertilizer error: {e}")
         traceback.print_exc()
         return render_template('try_again.html', title='Fertilizer Suggestion')
 
@@ -345,14 +345,14 @@ def disease_prediction():
             return render_template('disease.html', title='Disease Detection')
         try:
             if disease_model is None:
-                print("❌ Disease model not loaded!")
+                print(" Disease model not loaded!")
                 return render_template('try_again.html', title='Disease Detection')
             img = file.read()
             prediction = predict_image(img, model=disease_model)
             prediction = Markup(disease_dic[prediction])
             return render_template('disease-result.html', prediction=prediction, title='Disease Detection')
         except Exception as e:
-            print(f"❌ Disease error: {e}")
+            print(f" Disease error: {e}")
             traceback.print_exc()
             return render_template('try_again.html', title='Error')
     return render_template('disease.html', title='Disease Detection')
