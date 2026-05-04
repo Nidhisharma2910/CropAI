@@ -52,39 +52,32 @@ crop_recommendation_model = pickle.load(open(crop_model_path, 'rb'))
 import requests
 import os
 
-def weather_fetch(city_name):
-    api_key = os.getenv("WEATHER_API_KEY")
-    
-    if not api_key:
-        print("❌ API key not found. Set WEATHER_API_KEY")
-        return None
-
-    base_url = "http://api.weatherapi.com/v1/current.json"
-    complete_url = f"{base_url}?key={api_key}&q={city_name}"
+def weather_fetch(lat, lon):
+    url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current_weather=true&hourly=relativehumidity_2m"
 
     try:
-        response = requests.get(complete_url)
+        response = requests.get(url)
         data = response.json()
 
         print("API Response:", data)  # debug
 
-        # Check success
-        if response.status_code == 200 and "current" in data:
-            current = data["current"]
+        if response.status_code == 200 and "current_weather" in data:
+            temperature = data["current_weather"]["temperature"]
 
-            temperature = current["temp_c"]   # already in Celsius ✅
-            humidity = current["humidity"]
+            # humidity hourly data me aata hai
+            humidity = data["hourly"]["relativehumidity_2m"][0]
 
             return temperature, humidity
-
         else:
-            print("❌ Error:", data.get("error", {}).get("message", "Unknown error"))
+            print("❌ Error:", data)
             return None
 
     except Exception as e:
         print("❌ Exception occurred:", e)
         return None
+    
 
+    
 def predict_image(img, model=disease_model):
     transform = transforms.Compose([
         transforms.Resize(256),
